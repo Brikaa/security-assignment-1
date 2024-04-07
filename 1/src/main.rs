@@ -108,18 +108,15 @@ fn circular_shl(data: u64, i: u8) -> u64 {
 
 fn create_keys(k: u64) -> [u64; 16] {
     let k_plus = apply(64, PC_1, k);
-    eprintln!("K+: {:056b}", k_plus);
 
     let cp = (k_plus & 0b0000000011111111111111111111111111110000000000000000000000000000) >> 28;
     let dp = k_plus & 0b0000000000000000000000000000000000001111111111111111111111111111;
-    eprintln!("C0: {:028b}, D0: {:028b}", cp, dp);
 
     let mut keys = [0_u64; 16];
     for i in 1..=16 {
         let cn = circular_shl(cp, SHIFT_SCHEDULE[i - 1]);
         let dn = circular_shl(dp, SHIFT_SCHEDULE[i - 1]);
         keys[i - 1] = apply(56, PC_2, (cn << 28) | dn);
-        eprintln!("C{}: {:028b}, D{}: {:028b}", i, cn, i, dn);
     }
 
     keys
@@ -146,10 +143,8 @@ fn s(data: u64) -> u64 {
 
 fn encrypt_block(keys: &[u64; 16], m: u64) -> u64 {
     let ip = apply(64, IP, m);
-    eprintln!("IP: {:064b}", ip);
     let l0 = (ip & 0b1111111111111111111111111111111100000000000000000000000000000000) >> 32;
     let r0 = ip & 0b0000000000000000000000000000000011111111111111111111111111111111;
-    eprintln!("L0: {:032b}, R0: {:032b}", l0, r0);
 
     let mut lp = l0;
     let mut rp = r0;
@@ -160,7 +155,6 @@ fn encrypt_block(keys: &[u64; 16], m: u64) -> u64 {
         let rn = lp ^ f_result;
         lp = ln;
         rp = rn;
-        eprintln!("L{}: {:032b}, R{}: {:032b}", i, ln, i, rn);
     }
 
     apply(64, IP_INV, (rp << 32) | lp)
@@ -216,7 +210,7 @@ fn encrypt_message(keys: &[u64; 16], message: &str) -> Vec<u8> {
     encrypt_message_bytes(true, keys, message.as_bytes())
 }
 
-fn decrypt_bytes(keys: &[u64; 16], message_bytes: &[u8]) -> String {
+fn decrypt_bytes(keys: &[u64; 16], message_bytes: &[u8]) -> Result<String, ()> {
     let mut reversed = keys.clone();
     reversed.reverse();
     let mut decrypted = encrypt_message_bytes(false, &reversed, message_bytes);
@@ -224,7 +218,10 @@ fn decrypt_bytes(keys: &[u64; 16], message_bytes: &[u8]) -> String {
     for _ in 1..=padding_len {
         decrypted.pop().unwrap();
     }
-    String::from_utf8(decrypted).unwrap()
+    match String::from_utf8(decrypted) {
+        Ok(res) => Ok(res),
+        Err(_) => Err(()),
+    }
 }
 
 fn usage() -> String {
@@ -260,7 +257,8 @@ fn main() {
         let encrypted = BASE64_STANDARD
             .decode(encoded)
             .expect(format!("Could not decode the message in the file: {}", file_path).as_str());
-        let decrypted = decrypt_bytes(&create_keys(key), &encrypted);
+        let decrypted = decrypt_bytes(&create_keys(key), &encrypted)
+            .expect(format!("Failed to decrypt using the given key: {}", key).as_str());
         let decrypted_file_path = file_path.clone() + ".txt";
         fs::write(&decrypted_file_path, decrypted).expect("Failed to write to file");
         println!("Wrote the plain text in: {}", decrypted_file_path);
