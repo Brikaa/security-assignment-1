@@ -229,12 +229,17 @@ fn decrypt_bytes(keys: &[u64; 16], message_bytes: &[u8]) -> String {
 
 fn usage() -> String {
     let args: Vec<String> = env::args().collect();
-    format!("Usage: {} encrypt|decrypt file_path", args[0])
+    format!(
+        "Usage:
+    - {} encrypt file_path
+    - {} decrypt file_path key",
+        args[0], args[0]
+    )
 }
 fn main() {
-    let mut args: Vec<String> = env::args().collect();
-    let file_path = args.pop().expect(usage().as_str());
-    let op = args.pop().expect(usage().as_str());
+    let args: Vec<String> = env::args().collect();
+    let op = args.get(1).expect(usage().as_str());
+    let file_path = args.get(2).expect(usage().as_str());
     if op == "encrypt" {
         let key = rand::thread_rng().gen();
         let keys = &create_keys(key);
@@ -242,26 +247,25 @@ fn main() {
             .expect(format!("Could not read from: {}", file_path).as_str());
         let encrypted = encrypt_message(keys, &message);
         let encoded = BASE64_STANDARD.encode(encrypted);
-        let encoded_with_key = encoded + format!("{:064b}", key).as_str();
-        let encrypted_file_path = file_path + ".enc";
-        fs::write(&encrypted_file_path, encoded_with_key).expect("Failed to write to file");
+        let encrypted_file_path = file_path.clone() + ".enc";
+        fs::write(&encrypted_file_path, encoded).expect("Failed to write to file");
         println!("Wrote the ciphertext in: {}", encrypted_file_path);
+        println!("Key: {}", key);
     } else if op == "decrypt" {
-        let encoded_with_key = fs::read_to_string(&file_path)
+        let encoded = fs::read_to_string(&file_path)
             .expect(format!("Could not read from: {}", file_path).as_str());
-        let len = encoded_with_key.len();
-        let encoded = &encoded_with_key[0..len - 64];
-        let key = u64::from_str_radix(&encoded_with_key[len - 64..], 2)
-            .expect("Could not parse the key in the file");
+        let key: u64 = (args.get(3).expect(usage().as_str()))
+            .parse()
+            .expect("Could not parse the given key");
         let encrypted = BASE64_STANDARD
             .decode(encoded)
-            .expect("Could not decode the message in the file");
+            .expect(format!("Could not decode the message in the file: {}", file_path).as_str());
         let decrypted = decrypt_bytes(&create_keys(key), &encrypted);
-        let decrypted_file_path = file_path + ".txt";
+        let decrypted_file_path = file_path.clone() + ".txt";
         fs::write(&decrypted_file_path, decrypted).expect("Failed to write to file");
         println!("Wrote the plain text in: {}", decrypted_file_path);
     } else {
-        eprintln!("Invalid operation");
+        eprintln!("Invalid operation: {}", op);
         exit(1);
     }
 }
