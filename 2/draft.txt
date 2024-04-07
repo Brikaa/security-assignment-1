@@ -1,0 +1,9 @@
+mod_inverse(e, phi_n)
+  - gcd(e, phi_n) is 1
+  - x, y = extended_euclidean(e, phi_n, 1)
+  - e * x + phi_n * y = 1
+
+- Why does euclidean algorithm work?
+  - gcd(a, b) = gcd(a, b % a)
+    - The greatest common divisor of a, b where a < b
+      is the greatest common divisor of (the remainder of b/a), a
