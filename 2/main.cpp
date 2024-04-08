@@ -3,6 +3,7 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <sstream>
 
 struct PublicKey
 {
@@ -134,15 +135,56 @@ std::string decrypt_message(const std::vector<long long> cipher, PrivateKey key)
 
 int main()
 {
-    std::srand(time(nullptr));
-    auto [pub, priv] = generate_public_private_key_pair();
-    std::string message = "This is an encrypted message";
-    std::cout << "Message: " << message << '\n';
-    auto encrypted = encrypt_message(message, pub);
-    std::cout << "Encrypted bytes: ";
-    for (auto b : encrypted)
-        std::cout << b << ' ';
-    std::cout << '\n';
-    std::cout << "Decrypted: " << decrypt_message(encrypted, priv) << '\n';
+    std::cerr << "1. Generate keys\n2. Encrypt a message\n3. Decrypt a message\n";
+    char choice;
+    std::cin >> choice;
+    if (choice == '1')
+    {
+        std::srand(time(nullptr));
+        auto [pub, priv] = generate_public_private_key_pair();
+        std::cout << "Private key: d: " << priv.d << " p: " << priv.p << " q: " << priv.q << '\n';
+        std::cout << "Public key: e: " << pub.e << " n: " << pub.n << '\n';
+    }
+    else if (choice == '2')
+    {
+        std::cerr << "Message:\n";
+        std::string message;
+        std::cin.ignore();
+        std::getline(std::cin, message);
+
+        long long e, n;
+        std::cerr << "e:\n";
+        std::cin >> e;
+        std::cerr << "n:\n";
+        std::cin >> n;
+
+        auto encrypted = encrypt_message(message, {e, n});
+        std::cout << "Encrypted bytes: ";
+        for (auto b : encrypted)
+            std::cout << b << ' ';
+        std::cout << '\n';
+    }
+    else if (choice == '3')
+    {
+        std::cerr << "Message bytes separated by spaces: \n";
+        std::vector<long long> encrypted;
+        std::string bs;
+        std::cin.ignore();
+        std::getline(std::cin, bs);
+        std::stringstream s(bs);
+        long long byte;
+        while (s >> byte)
+        {
+            encrypted.push_back(byte);
+        }
+        long long d, p, q;
+        std::cerr << "d:\n";
+        std::cin >> d;
+        std::cerr << "p:\n";
+        std::cin >> p;
+        std::cerr << "q:\n";
+        std::cin >> q;
+        std::cout << "Decrypted: " << decrypt_message(encrypted, {d, p, q}) << '\n';
+    }
     return 0;
 }
