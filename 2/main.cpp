@@ -1,8 +1,8 @@
 #include <random>
 #include <iostream>
 #include <utility>
-#include <array>
-#include <cmath>
+#include <string>
+#include <vector>
 typedef unsigned long long ull;
 typedef unsigned int ui;
 
@@ -64,6 +64,7 @@ std::pair<PublicKey, PrivateKey> generate_public_private_key_pair()
     const ull q = generate_prime();
     const ull n = p * q;
     const ull phi_n = (p - 1) * (q - 1);
+    std::cerr << "phi_n: " << phi_n << '\n';
     const ull e = 65537; // commonly used value
     const ull d = mod_inverse(e, phi_n);
     return {{e, n}, {d, p, q}};
@@ -115,12 +116,40 @@ ull decrypt(ull c, ull d, ull p, ull q)
     return power_mod(c, d, p * q);
 }
 
+std::vector<ull> encrypt_message(const std::string message, PublicKey key)
+{
+    std::vector<ull> res;
+    for (auto c : message)
+        res.push_back(encrypt(c, key.e, key.n));
+    return res;
+}
+
+std::string decrypt_message(const std::vector<ull> cipher, PrivateKey key)
+{
+    std::string res = "";
+    for (auto c : cipher)
+    {
+        ull d = decrypt(c, key.d, key.p, key.q);
+        std::cout << d << '\n';
+        res += d;
+    }
+    return res;
+}
+
 int main()
 {
     std::srand(time(nullptr));
-    auto [pub, _] = generate_public_private_key_pair();
-    ull m = 255;
-    std::cout << m << ' ' << pub.e << ' ' << pub.n << '\n';
-    std::cout << encrypt(255, pub.e, pub.n) << '\n';
+    auto [pub, priv] = generate_public_private_key_pair();
+    std::string message = "A";
+    std::cout << "Message: " << message << '\n';
+    auto encrypted = encrypt_message(message, pub);
+    std::cerr << "A: " << (ull)'A' << '\n';
+    std::cerr << "e: " << pub.e << " n: " << pub.n << '\n';
+    std::cerr << "d: " << priv.d << " p: " << priv.p << " q: " << priv.q << '\n';
+    for (auto b : encrypted)
+        std::cerr << "enc: " << b << ' ';
+    std::cerr << '\n';
+    std::cout << "Decrypted: " << decrypt_message(encrypted, priv) << '\n';
+    // std::cout << power_mod(2737252505083884131, 855606654899892609, 1455041561ll * 1928481367ll);
     return 0;
 }
