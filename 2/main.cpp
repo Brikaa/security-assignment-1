@@ -3,25 +3,23 @@
 #include <utility>
 #include <string>
 #include <vector>
-typedef unsigned long long ull;
-typedef unsigned int ui;
 
 struct PublicKey
 {
-    ull e;
-    ull n;
+    long long e;
+    long long n;
 };
 
 struct PrivateKey
 {
-    ull d;
-    ull p;
-    ull q;
+    long long d;
+    long long p;
+    long long q;
 };
 
-bool is_prime(const ull no)
+bool is_prime(const long long no)
 {
-    for (ull i = 2; i * i < no; ++i)
+    for (long long i = 2; i * i < no; ++i)
         if (no % i == 0)
             return false;
     return true;
@@ -36,7 +34,7 @@ std::pair<long long, long long> bezout(long long a, long long b)
     return {y - (b / a) * x, x};
 }
 
-ull mod_inverse(ull e, ull phi_n)
+long long mod_inverse(long long e, long long phi_n)
 {
     auto [x, _] = bezout(e, phi_n);
     // since e * x + phi_n * y = gcd(e, phi_n)
@@ -48,11 +46,11 @@ ull mod_inverse(ull e, ull phi_n)
     return (x % phi_n + phi_n) % phi_n;
 }
 
-ull generate_prime()
+long long generate_prime()
 {
     while (true)
     {
-        const ui no = std::rand() | 1; // generate odd number
+        const int no = std::rand() | 1; // generate odd number
         if (is_prime(no))
             return no;
     }
@@ -60,21 +58,20 @@ ull generate_prime()
 
 std::pair<PublicKey, PrivateKey> generate_public_private_key_pair()
 {
-    const ull p = generate_prime();
-    const ull q = generate_prime();
-    const ull n = p * q;
-    const ull phi_n = (p - 1) * (q - 1);
-    std::cerr << "phi_n: " << phi_n << '\n';
-    const ull e = 65537; // commonly used value
-    const ull d = mod_inverse(e, phi_n);
+    const long long p = generate_prime();
+    const long long q = generate_prime();
+    const long long n = p * q;
+    const long long phi_n = (p - 1) * (q - 1);
+    const long long e = 65537; // commonly used value
+    const long long d = mod_inverse(e, phi_n);
     return {{e, n}, {d, p, q}};
 }
 
-ull multiply_mod(ull a, ull b, ull mod)
+long long multiply_mod(long long a, long long b, long long mod)
 {
     // 8*3 = 2*4*b = 2*2*2*b
     // 9*3 = b + 2*4*b = b + 2*2*2*b
-    ull res = 0;
+    long long res = 0;
     while (a != 1)
     {
         if (a % 2 == 1)
@@ -88,11 +85,11 @@ ull multiply_mod(ull a, ull b, ull mod)
     return (res + b) % mod;
 }
 
-ull power_mod(ull base, ull exponent, ull mod)
+long long power_mod(long long base, long long exponent, long long mod)
 {
     // 2 ** 8 = ((2 ** 2) ** 2) ** 2
     // 2 ** 9 = 2 * ((2 ** 2) ** 2) ** 2
-    ull res = 1;
+    long long res = 1;
     while (exponent != 1)
     {
         if (exponent % 2 == 1)
@@ -106,31 +103,30 @@ ull power_mod(ull base, ull exponent, ull mod)
     return multiply_mod(res, base, mod);
 }
 
-ull encrypt(ull m, ull e, ull n)
+long long encrypt(long long m, long long e, long long n)
 {
     return power_mod(m, e, n);
 }
 
-ull decrypt(ull c, ull d, ull p, ull q)
+long long decrypt(long long c, long long d, long long p, long long q)
 {
     return power_mod(c, d, p * q);
 }
 
-std::vector<ull> encrypt_message(const std::string message, PublicKey key)
+std::vector<long long> encrypt_message(const std::string message, PublicKey key)
 {
-    std::vector<ull> res;
+    std::vector<long long> res;
     for (auto c : message)
         res.push_back(encrypt(c, key.e, key.n));
     return res;
 }
 
-std::string decrypt_message(const std::vector<ull> cipher, PrivateKey key)
+std::string decrypt_message(const std::vector<long long> cipher, PrivateKey key)
 {
     std::string res = "";
     for (auto c : cipher)
     {
-        ull d = decrypt(c, key.d, key.p, key.q);
-        std::cout << d << '\n';
+        long long d = decrypt(c, key.d, key.p, key.q);
         res += d;
     }
     return res;
@@ -140,16 +136,13 @@ int main()
 {
     std::srand(time(nullptr));
     auto [pub, priv] = generate_public_private_key_pair();
-    std::string message = "A";
+    std::string message = "This is an encrypted message";
     std::cout << "Message: " << message << '\n';
     auto encrypted = encrypt_message(message, pub);
-    std::cerr << "A: " << (ull)'A' << '\n';
-    std::cerr << "e: " << pub.e << " n: " << pub.n << '\n';
-    std::cerr << "d: " << priv.d << " p: " << priv.p << " q: " << priv.q << '\n';
+    std::cout << "Encrypted bytes: ";
     for (auto b : encrypted)
-        std::cerr << "enc: " << b << ' ';
-    std::cerr << '\n';
+        std::cout << b << ' ';
+    std::cout << '\n';
     std::cout << "Decrypted: " << decrypt_message(encrypted, priv) << '\n';
-    // std::cout << power_mod(2737252505083884131, 855606654899892609, 1455041561ll * 1928481367ll);
     return 0;
 }
