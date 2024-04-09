@@ -1,6 +1,6 @@
 ## Engineer Man Knowledge Center (emkc)
 
-This is the official repo and project for the Engineer Man Knowledge Center. The official deployment of this project
+This is a fork of https://github.com/engineer-man/emkc. The official deployment of this project
 is located at https://emkc.org. Be sure to familiarize yourself with the contribution guidelines and project license
 if you plan to use this software.
 

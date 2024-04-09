@@ -1,2 +1,26 @@
-TODO
-  - Run the application
+- Description
+- What security measures and access control mechanisms were implemented in the application before our work
+- Security measures implemented
+  - New access control mechanisms
+  - Brief description of what was fixed from penetration testing findings
+- Penetration testing findings and methodologies
+  - Security vulnerability: XSS
+  - Methodology: static analysis
+  - Description: ...
+  - Status: fixed by ... (maybe include commit hash fixing it) | not fixed
+- Recommendations
+  - Recommend fixing stuff that are not fixed
+  - Recommend encryption, etc.
+
+=====================================
+
+- Exploit dangerouslySetInnerHTML
+  - Challenges creation
+- Exploit NPM vulnerabilities
+- Exploit unsecured API endpoints
+  - Contests
+  - Challenge with invalid difficulty
+- Availability attacks
+  - Delete user who has submission on homepage (will cause contests to crash)
+  - Put contest with invalid JSON
+- Automated penetration testing
