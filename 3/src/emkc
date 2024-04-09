@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+function init_files {
+    chmod 0444 var/docker/config/mysqld.cnf
+}
+
+case $* in
+    init )
+        cp -n platform/config/local.js.sample platform/config/local.js
+        cp -n platform/migrations/config.json.sample platform/migrations/config.json
+        init_files
+        docker-compose build
+        docker-compose run --rm --no-deps emkc bash -c 'cd /opt/emkc/platform; npm install'
+        ;;
+    deploy )
+        git pull
+        docker-compose run --rm --no-deps emkc bash -c 'cd /opt/emkc/platform; npm install'
+        docker-compose down
+        docker-compose run --rm emkc bash -c 'cd /opt/emkc/platform/migrations; rmig migrate'
+        init_files
+        docker-compose up -d
+        ;;
+    start )
+        init_files
+        docker-compose up -d
+        ;;
+    stop )
+        docker-compose down
+        ;;
+    restart )
+        docker-compose restart
+        ;;
+    shell )
+        docker exec -it emkc /bin/bash
+        ;;
+    rebuild )
+        docker-compose build
+        ;;
+    npm )
+        docker-compose run --rm --no-deps emkc bash -c 'cd /opt/emkc/platform; npm install'
+        ;;
+    cron* )
+        docker-compose exec emkc bash -c "/opt/emkc/platform/console/cron.js $2"
+        ;;
+    mysql )
+        docker exec -it emkc_mysql bash -c 'mysql -hmysql -uroot -proot -Demkc'
+        ;;
+    rmig* )
+        docker exec -it emkc bash -c "cd /opt/emkc/platform/migrations; $*"
+        ;;
+    tail )
+        docker-compose logs -f
+        ;;
+    "" )
+        echo 'emkc control, usage: emkc [command]'
+        echo ''
+        echo 'init          initialize env specific config files'
+        echo 'start         start the emkc docker container'
+        echo 'stop          stop the emkc docker container'
+        echo 'restart       restart the docker containers'
+        echo 'shell         start a shell in the docker container'
+        echo 'rebuild       rebuild emkc from scratch'
+        echo 'npm           update node modules'
+        echo 'mysql         login to mysql'
+        echo 'rmig status   show the status of migrations'
+        echo 'rmig migrate  run the pending database migrations'
+        echo 'rmig rollback rollback one database migration'
+        echo 'tail          watch app and db logs'
+        exit 1
+esac

@@ -1,0 +1,24 @@
+{% extends 'master.twig'%}
+{% block title %}{{ challenge.difficulty_name_upper }} Challenge: {{ challenge.name }} | EMKC{% endblock %}
+{% block css %}
+    {{ parent() }}
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+{% endblock %}
+{% block bundles %}
+    <script src="/lib/webpack/monaco.bundle.js?{{ sails.local.epoch }}"></script>
+{% endblock %}
+{% block content %}
+    <div
+        id="react_challenge"
+        data-solved="{{ solved|json_encode|e }}",
+        data-challenge="{{ challenge|json_encode|e }}",
+        data-language="{{ language|json_encode|e }}",
+        data-monaco_language="{{ monaco_language|json_encode|e }}",
+        data-abstract="{{ abstract|json_encode|e }}",
+        data-template="{{ template|json_encode|e }}"
+    ></div>
+{% endblock %}

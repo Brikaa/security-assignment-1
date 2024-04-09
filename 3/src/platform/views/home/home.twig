@@ -1,0 +1,50 @@
+{% extends 'master.twig'%}
+{% block content %}
+    <div class="em_common_content container">
+        <div class="row marginbottom20">
+            <div class="col-12">
+                <h4 class="f300">Top {{ users|length }} Engineers on Planet Earth</h4>
+            </div>
+        </div>
+        <div class="row em_top_members">
+            <div class="col-12">
+                {% for user in users %}
+                    {% set color = '#000' %}
+                    {% if user.score >= 40 %}
+                        {% set color = '#79ACBF' %}
+                    {% endif %}
+                    {% if user.score >= 300 %}
+                        {% set color = '#7D9DC5' %}
+                    {% endif %}
+                    {% if user.score >= 1000 %}
+                        {% set color = '#ACB2E4' %}
+                    {% endif %}
+                    {% if user.score >= 5000 %}
+                        {% set color = '#D2ACE4' %}
+                    {% endif %}
+                    {% set max_score = users[0].score %}
+                    <a href="/@{{ user.username }}" class="user_row">
+                        <div class="score_progress" style="background: {{ color }}; width: {{ (user.score / max_score) * 100 }}%;"></div>
+                        <div class="picture">
+                            <img src="{{ req.local.constant.cdn_url ~ user.avatar_url }}" />
+                        </div>
+                        <div class="name">
+                            <div class="wrapper">
+                                {{ user.display_name|e }}
+                                {% if user.is_staff %}
+                                    <span class="badge badge-primary">Staff</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="power">
+                            <div class="wrapper">
+                                <i class="fa fa-bolt"></i>
+                                {{ user.score }}
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

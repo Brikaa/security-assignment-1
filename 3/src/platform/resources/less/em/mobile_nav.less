@@ -1,0 +1,53 @@
+.em_mobile_nav {
+    display: none;
+    &.open {
+        display: inline;
+    }
+    .backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.6);
+        text-align: center;
+    }
+    .close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        cursor: pointer;
+        i {
+            color: #fff;
+            &:hover {
+                color: #eee;
+            }
+        }
+    }
+    .menu {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 75%;
+        background: #282c34;
+        color: #fff;
+        text-align: left;
+        z-index: 1;
+        .contents {
+            padding: 16px;
+            a {
+                display: block;
+                padding: 10px;
+                background: #22262c;
+                margin-bottom: 4px;
+            }
+            .spacer {
+                height: 20px;
+            }
+        }
+    }
+    @media (min-width: 701px) {
+        display: none !important;
+    }
+}

@@ -1,0 +1,72 @@
+{% extends 'master.twig'%}
+{% block title %}{{ user.display_name|e }} - EMKC Member{% endblock %}
+{% block content %}
+    <div class="em_common_content em_profile container">
+        <div class="content">
+            <div class="left">
+                <div class="padding">
+                    <img src="{{ sails.local.constant.cdn_url }}{{ user.avatar_url }}" class="avatar" />
+                    <h4 class="f700">{{ user.display_name }}</h4>
+                    <h4 class="f900"><i class="fa fa-bolt"></i> {{ user.score }}</h4>
+                    <hr />
+                    <p>
+                        <span class="f700">Member Since</span><br />
+                        {{ user.created_at|date('m/d/Y') }}
+                    </p>
+                    <p>
+                        <span class="f700">Challenges Solved</span><br />
+                        {{ stat_challenges }}
+                    </p>
+                    <p>
+                        <span class="f700">Contests Entered</span><br />
+                        {{ stat_contests }}
+                    </p>
+                </div>
+            </div>
+            <div class="right">
+                <h4 class="f300">Awards</h4>
+
+                <div class="awards">
+                    {% for award in awards %}
+                        <div class="award">
+                            <div>
+                                <img
+                                    data-placement="bottom"
+                                    title="{{ award.tooltip_text }}"
+                                    src="/images/awards/{{ award.type }}.png" />
+                            </div>
+                            <div class="count">
+                                {{ award.count }}
+                            </div>
+                        </div>
+                    {% else %}
+                        This user has no awards yet.
+                    {% endif %}
+                </div>
+                <script>$('.award img').tooltip({container: '.awards'})</script>
+
+                <h4 class="f300">Recent Solved Challenges</h4>
+
+                {% for challenge in challenges %}
+                    <div class="d-flex challenge">
+                        <a href="/challenges/{{ challenge.challenge_id}}/{{ challenge.language }}" class="flex-grow-1 {{ challenge.challenge.difficulty_name }}">
+                            <p>
+                                {{ challenge.challenge.description }}
+                            </p>
+                            <span class="badge badge-light">{{ challenge.language }}</span>
+                            <span class="badge badge-primary">Solved on: {{ challenge.created_at|date('m/d/Y') }}</span>
+                        </a>
+                        {% if user_solved_challenges|contains(challenge) %}
+                            <a href="/@{{ user.username }}/challenges/{{ challenge.challenge_id}}/{{ challenge.language }}" class="view_solution d-flex flex-column justify-content-center align-items-center">
+                                <p>View</p>
+                                <p>Solution</p>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    This user has not solved any challenges.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

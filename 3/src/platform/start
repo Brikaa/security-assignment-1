@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+APPENV=${APPENV:-development}
+
+echo "running in $APPENV mode"
+
+if [ $APPENV == "production" ]; then
+    npm run prod
+else
+    npm run dev
+fi

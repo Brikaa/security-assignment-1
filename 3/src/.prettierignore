@@ -1,0 +1,12 @@
+platform/config/local.js
+platform/migrations/config.json
+platform/public/css/*.css
+platform/public/lib
+platform/resources/challenges/templates
+cdn/avatars/*
+var/
+node_modules
+package-lock.json
+.env
+.DS_STORE
+.vscode

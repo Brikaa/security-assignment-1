@@ -1,0 +1,35 @@
+version: '3'
+services:
+    emkc:
+        container_name: emkc
+        build: .
+        ports:
+            - '2005:2727'
+        volumes:
+            - ./:/opt/emkc
+        environment:
+            APPENV: '${APPENV}'
+        restart: always
+        depends_on:
+            - redis
+            - mysql
+    redis:
+        container_name: emkc_redis
+        image: redis:3.2.12
+        volumes:
+            - ./:/opt/emkc
+            - ./var/docker/redis:/data
+        restart: always
+    mysql:
+        container_name: emkc_mysql
+        image: mysql:8
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: emkc
+        command: --init-file /var/lib/init/db.sql
+        volumes:
+            - ./:/opt/emkc
+            - ./var/docker/mysql:/var/lib/mysql
+            - ./var/docker/init:/var/lib/init
+            - ./var/docker/config:/etc/mysql/conf.d
+        restart: always

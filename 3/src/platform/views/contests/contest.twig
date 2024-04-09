@@ -1,0 +1,16 @@
+{% extends 'master.twig'%}
+{% block title %}Coding Contest: {{ contest.name|e }} | EMKC{% endblock %}
+{% block content %}
+    <div class="em_common_content em_contests_contest container">
+        <div class="row">
+            <div class="col-12">
+                <div
+                    id="react_contest_contest"
+                    data-contest="{{ contest|json_encode|e }}"
+                    data-cases="{{ cases|json_encode|e }}"
+                    data-submissions="{{ submissions|json_encode|e }}"
+                ></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
