@@ -16,11 +16,14 @@
 
 - Exploit dangerouslySetInnerHTML
   - Challenges creation
-- Exploit NPM vulnerabilities
+    - Modifying the create challenge POST request body to include arbitrary HTML in the html attribute
+- NPM vulnerabilities scanning
+  - Audit report produced
 - Exploit unsecured API endpoints
   - Contests
   - Challenge with invalid difficulty
 - Availability attacks
+  - Submit to an invalid contest
   - Delete user who has submission on homepage (will cause contests to crash)
   - Put contest with invalid JSON
 - Automated penetration testing
