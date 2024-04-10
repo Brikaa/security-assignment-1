@@ -44,6 +44,8 @@ module.exports = {
                 simple: true
             });
 
+            console.log({auth_result});
+
             // use the returned token to get the data of the user who just logged in
             let discord_user = await request({
                 method: 'get',
@@ -144,6 +146,7 @@ module.exports = {
                 return res.redirect('/');
             }
         } catch (e) {
+            console.log({e});
             return res.redirect('/');
         }
     }
