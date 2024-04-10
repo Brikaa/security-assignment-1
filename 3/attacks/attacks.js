@@ -16,6 +16,7 @@ const login = async () => {
 };
 
 (async () => {
+  console.log('Log in with an account that has add challenges permission');
   const cookie = await login();
 
   console.log('XSS Attack');
@@ -59,6 +60,6 @@ const login = async () => {
 
   console.log({ statusText: res.statusText });
   console.log(
-    'If the attack is successful, you will see a new challenge called XSS injected with an unsafe form'
+    'If the attack is successful, you will see a new challenge called "XSS injected" with an unsafe form'
   );
 })();
