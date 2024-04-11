@@ -20,10 +20,11 @@
 - NPM vulnerabilities scanning
   - Audit report produced
 - Exploit unsecured API endpoints
-  - Contests
+  - Future contests
   - Challenge with invalid difficulty
 - Availability attacks
   - Submit to an invalid contest
   - Delete user who has submission on homepage (will cause contests to crash)
   - Put contest with invalid JSON
 - Automated penetration testing
+  - ZAP
