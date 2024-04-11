@@ -24,7 +24,7 @@
 - Internal error messages shown to user
   - Create snippet with null language (done)
 - Availability attacks
-  - Submit to an invalid contest
+  - Submit to an invalid contest (done)
   - Delete user who has submission on homepage (will cause contests to crash)
   - Contests with invalid data types in body
   - Put contest with invalid JSON ops

