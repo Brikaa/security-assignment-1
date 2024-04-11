@@ -16,14 +16,13 @@
 
 - Exploit dangerouslySetInnerHTML
   - Challenges creation
-    - Modifying the create challenge POST request body to include arbitrary HTML in the html attribute
+    - Modifying the create challenge POST request body to include arbitrary HTML in the html attribute (done)
 - NPM vulnerabilities scanning
-  - Audit report produced
+  - Audit report produced (done)
 - Exploit unsecured API endpoints
-  - Future contests
-  - Challenge with invalid difficulty
+  - Future contests (done)
 - Internal error messages shown to user
-  - Create snippet with null language
+  - Create snippet with null language (done)
 - Availability attacks
   - Submit to an invalid contest
   - Delete user who has submission on homepage (will cause contests to crash)
