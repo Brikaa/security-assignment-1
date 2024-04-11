@@ -22,9 +22,12 @@
 - Exploit unsecured API endpoints
   - Future contests
   - Challenge with invalid difficulty
+- Internal error messages shown to user
+  - Create snippet with null language
 - Availability attacks
   - Submit to an invalid contest
   - Delete user who has submission on homepage (will cause contests to crash)
-  - Put contest with invalid JSON
+  - Contests with invalid data types in body
+  - Put contest with invalid JSON ops
 - Automated penetration testing
   - ZAP

