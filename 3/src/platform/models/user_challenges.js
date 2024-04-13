@@ -71,4 +71,5 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     return user_challenges;
+    
 };
