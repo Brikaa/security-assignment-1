@@ -222,7 +222,7 @@ const cron = {
     async update_staff() {
         await db.users.update(
             {
-                is_staff: 0
+                is_superuser: 0
             },
             {
                 where: {}
@@ -259,7 +259,7 @@ const cron = {
 
         await db.users.update(
             {
-                is_staff: 1
+                is_superuser: 1
             },
             {
                 where: {

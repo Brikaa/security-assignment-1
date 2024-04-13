@@ -43,7 +43,6 @@ module.exports.routes = {
         'ChallengesController.view_other',
 
     // admin
-    'GET /admin': 'admin/DashboardController.dashboard',
     'GET /admin/contests': 'admin/ContestsController.view_all',
     'GET /admin/challenges': 'admin/ChallengesController.view_all',
     'GET /admin/challenges/update/:challenge_id':

@@ -30,3 +30,13 @@
   - Put contest with invalid JSON ops
 - Automated penetration testing
   - ZAP
+
+=========================================
+
+- roles
+  - superuser
+  - challenge_author
+  - contest_author
+  - user
+
+- Allow superusers to set a user as a challenge author or a contest author

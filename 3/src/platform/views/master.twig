@@ -44,7 +44,9 @@
                 cdn_url: '{{ req.local.constant.cdn_url }}',
                 user_id: +'{{ req.local.user_id ? req.local.user_id : 0 }}',
                 username: {{ req.local.user.username|json_encode }},
-                is_staff: +'{{ req.local.user and req.local.user.is_staff ? 1 : 0 }}',
+                is_superuser: +'{{ req.local.user and req.local.user.is_superuser ? 1 : 0 }}',
+                is_contest_author: +'{{ req.local.user and req.local.user.is_contest_author ? 1 : 0 }}',
+                is_challenge_author: +'{{ req.local.user and req.local.user.is_challenge_author ? 1 : 0 }}',
             };
         </script>
 
@@ -93,8 +95,15 @@
                             <div class="dropdown-menu dropdown-menu-right">
                                 <h6 class="dropdown-header">{{ req.local.user.username }}</h6>
                                 <a class="dropdown-item" href="/@{{ req.local.user.username }}">Profile</a>
-                                {% if req.local.user.is_staff %}
-                                    <a class="dropdown-item" href="/admin">Staff Area</a>
+                                {% if req.local.user.is_superuser %}
+                                    <a class="dropdown-item" href="/admin/users">Manage users</a>
+                                    <a class="dropdown-item" href="/admin/piston">Manage Piston</a>
+                                {% endif %}
+                                {% if req.local.user.is_contest_author or req.local.user.is_superuser %}
+                                    <a class="dropdown-item" href="/admin/contests">Manage contests</a>
+                                {% endif %}
+                                {% if req.local.user.is_challenge_author or req.local.user.is_superuser %}
+                                    <a class="dropdown-item" href="/admin/challenges">Manage challenges</a>
                                 {% endif %}
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="/logout">Logout</a>
@@ -110,16 +119,6 @@
                     </div>
                 {% endif %}
             </div>
-
-            {% if sails.twig.starts_with(req.path, '/admin') and req.local.user.is_staff %}
-                <div class="em_staff_container">
-                    Staff Stuff:
-                    <a href="/admin/users">Users</a> |
-                    <a href="/admin/contests">Contests</a> |
-                    <a href="/admin/challenges">Challenges</a> |
-                    <a href="/admin/piston">Piston</a>
-                </div>
-            {% endif %}
 
             {% block content %}{% endblock %}
 

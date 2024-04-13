@@ -49,23 +49,19 @@ module.exports.policies = {
     },
 
     'admin/ContestsController': {
-        '*': ['common', 'logged_in', 'is_admin']
+        '*': ['common', 'logged_in', 'is_contest_author']
     },
 
     'admin/ChallengesController': {
-        '*': ['common', 'logged_in', 'is_admin']
-    },
-
-    'admin/DashboardController': {
-        '*': ['common', 'logged_in', 'is_admin']
+        '*': ['common', 'logged_in', 'is_challenge_author']
     },
 
     'admin/UsersController': {
-        '*': ['common', 'logged_in', 'is_admin']
+        '*': ['common', 'logged_in', 'is_superuser']
     },
 
     'admin/PistonController': {
-        '*': ['common', 'logged_in', 'is_admin', 'is_prod']
+        '*': ['common', 'logged_in', 'is_superuser', 'is_prod']
     },
 
     'api/internal/ChatsController': {

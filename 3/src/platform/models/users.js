@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true
             },
-            is_staff: DataTypes.INTEGER,
+            is_superuser: DataTypes.INTEGER,
+            is_contest_author: DataTypes.INTEGER,
+            is_challenge_author: DataTypes.INTEGER,
             display_name: DataTypes.STRING,
             username: DataTypes.STRING,
             email: DataTypes.STRING,
