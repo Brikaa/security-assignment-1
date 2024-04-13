@@ -40,3 +40,15 @@
   - user
 
 - Allow superusers to set a user as a challenge author or a contest author
+
+==========================================
+
+- Sensitive data is properly secured
+  - What data can we call it sensitive data?
+    - passwords
+    - messages
+    - piston's source
+    - solutions
+    - address in sticker_orders.js ...?
+  - checking passwords:
+    - user's passwords is hashed using sha1 algorithm

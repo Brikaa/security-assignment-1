@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const crypto = require('crypto');
+const CryptoJS = require('crypto-js');
 
 module.exports = (sequelize, DataTypes) => {
     class users extends Sequelize.Model {}
@@ -37,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
                             .createHash('sha1')
                             .update(instance.password)
                             .digest('hex');
+                    encryptEmail(instance);
                 },
 
                 beforeUpdate(instance) {
@@ -45,10 +47,47 @@ module.exports = (sequelize, DataTypes) => {
                             .createHash('sha1')
                             .update(instance.password)
                             .digest('hex');
+                    if (instance.changed('email'))
+                        encryptEmail(instance);
+                },
+                afterFind(instances) {
+                    if (instances) {
+                        if (Array.isArray(instances)) {
+                            Promise.all(instances.map((instance) => {
+                                decryptEmail(instance);
+                            }));
+                        } else {
+                            decryptEmail(instances);
+                        }
+                    }
                 }
             }
         }
     );
 
+    function encryptEmail(instance) {
+        const encryption_key = process.env.ENCRYPTION_KEY;
+        if (encryption_key && instance.email) {
+            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
+            const data_array = CryptoJS.enc.Utf8.parse(instance.email);
+            const encrypted = CryptoJS.AES.encrypt(data_array, key_array, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7,
+            });
+            instance.email = encrypted.toString();
+        }
+    }
+
+    function decryptEmail(instance){
+        const encryption_key = process.env.ENCRYPTION_KEY;
+        if (encryption_key && instance.email) {
+            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
+            const decrypted = CryptoJS.AES.decrypt(instance.email, key_array, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7,
+            });
+            instance.email = decrypted.toString(CryptoJS.enc.Utf8);
+        }
+    }
     return users;
 };
