@@ -63,6 +63,7 @@ module.exports.routes = {
         'admin/ContestsController.delete_submission',
     'GET /admin/users': 'admin/UsersController.view_all',
     'GET /admin/users/login_as': 'admin/UsersController.login_as',
+    'PUT /admin/users/:user_id': 'admin/UsersController.update_user_info',
     'GET /admin/piston': 'admin/PistonController.view_all',
     'GET /admin/piston/packages': 'admin/PistonController.packages',
     'GET /admin/piston/install': 'admin/PistonController.install',

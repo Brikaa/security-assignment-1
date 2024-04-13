@@ -34,10 +34,10 @@
                                 {% if user.is_superuser %}
                                     <span class="badge badge-primary">superuser</span>
                                 {% endif %}
-                                {% if user.is_challenge_author %}
+                                {% if user.is_challenge_author and not user.is_superuser %}
                                     <span class="badge badge-primary">challenge author</span>
                                 {% endif %}
-                                {% if user.is_contest_author %}
+                                {% if user.is_contest_author and not user.is_superuser %}
                                     <span class="badge badge-primary">contest author</span>
                                 {% endif %}
                             </div>
