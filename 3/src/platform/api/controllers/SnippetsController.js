@@ -51,7 +51,11 @@ module.exports = {
 
             try {
                 if (!snip) {
-                    throw new Error('Please supply some code');
+                    return res.status(400).send({ message: 'Please supply some code' });
+                }
+
+                if (!language) {
+                    return res.status(400).send({ message: 'No language was supplied' });
                 }
 
                 let snippet = await db.snippets.create({
@@ -65,9 +69,7 @@ module.exports = {
                 });
             } catch (e) {
                 console.error(e);
-                return res.status(500).send({
-                    message: 'An error has occurred'
-                });
+                return res.status(500).send();
             }
         }
 
