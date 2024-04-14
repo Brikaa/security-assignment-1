@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const CryptoJS = require('crypto-js');
+
 module.exports = (sequelize, DataTypes) => {
     class piston_runs extends Sequelize.Model {}
 
@@ -23,53 +23,20 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'piston_runs',
             freezeTableName: true,
             hooks: {
-                beforeCreate(instance) {
+                async beforeCreate(instance) {
                     instance.created_at = util.now();
-                    encryptSource(instance);
+                    instance.source = await encryption.encrypt(instance.source);
                 },
-                beforeUpdate(instance){
-                    if(instance.changed('source'))
-                        encryptSource(instance);
+                async beforeUpdate(instance) {
+                    if (instance.changed('source')) instance.source = await encryption.encrypt(instance.source);
                 },
                 afterFind(instances) {
-                    if (instances) {
-                        if (Array.isArray(instances)) {
-                            Promise.all(instances.map((instance) => {
-                                decryptSource(instance);
-                            }));
-                        } else {
-                            decryptSource(instances);
-                        }
-                    }
+                    return util.update_instances(instances, async (instance) => {
+                        instance.source = await encryption.decrypt(instance.source);
+                    });
                 }
             }
         }
     );
-
-
-    function encryptSource(instance) {
-        const encryption_key = process.env.ENCRYPTION_KEY;
-        if (encryption_key && instance.source) {
-            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
-            const data_array = CryptoJS.enc.Utf8.parse(instance.source);
-            const encrypted = CryptoJS.AES.encrypt(data_array, key_array, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7,
-            });
-            instance.source = encrypted.toString();
-        }
-    }
-
-    function decryptSource(instance){
-        const encryption_key = process.env.ENCRYPTION_KEY;
-        if (encryption_key && instance.source) {
-            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
-            const decrypted = CryptoJS.AES.decrypt(instance.source, key_array, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7,
-            });
-            instance.source = decrypted.toString(CryptoJS.enc.Utf8);
-        }
-    }
     return piston_runs;
 };

@@ -144,6 +144,7 @@ module.exports = {
                 return res.redirect('/');
             }
         } catch (e) {
+            console.error(e);
             return res.redirect('/');
         }
     }

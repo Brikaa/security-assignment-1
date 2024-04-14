@@ -1,5 +1,4 @@
 const Sequelize = require('sequelize');
-const CryptoJS = require('crypto-js');
 
 module.exports = (sequelize, DataTypes) => {
     class user_challenges extends Sequelize.Model {}
@@ -22,54 +21,21 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'user_challenges',
             freezeTableName: true,
             hooks: {
-                beforeCreate(instance) {
+                async beforeCreate(instance) {
                     instance.created_at = util.now();
-                    encryptSolution(instance);
+                    instance.solution = await encryption.encrypt(instance.solution);
                 },
-                beforeUpdate(instance){
-                    if(instance.changed('solution'))
-                        encryptSolution(instance);
+                async beforeUpdate(instance) {
+                    if (instance.changed('solution')) instance.solution = await encryption.encrypt(instance.solution);
                 },
                 afterFind(instances) {
-                    if (instances) {
-                        if (Array.isArray(instances)) {
-                            Promise.all(instances.map((instance) => {
-                                decryptSolution(instance);
-                            }));
-                        } else {
-                            decryptSolution(instances);
-                        }
-                    }
+                    console.log({instances});
+                    return util.update_instances(instances, async (instance) => {
+                        instance.solution = await encryption.decrypt(instance.solution);
+                    });
                 }
             }
         }
     );
-
-
-    function encryptSolution(instance) {
-        const encryption_key = process.env.ENCRYPTION_KEY;
-        if (encryption_key && instance.solution) {
-            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
-            const data_array = CryptoJS.enc.Utf8.parse(instance.solution);
-            const encrypted = CryptoJS.AES.encrypt(data_array, key_array, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7,
-            });
-            instance.solution = encrypted.toString();
-        }
-    }
-
-    function decryptSolution(instance){
-        const encryption_key = process.env.ENCRYPTION_KEY;
-        if (encryption_key && instance.solution) {
-            const key_array = CryptoJS.enc.Utf8.parse(encryption_key);
-            const decrypted = CryptoJS.AES.decrypt(instance.solution, key_array, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7,
-            });
-            instance.solution = decrypted.toString(CryptoJS.enc.Utf8);
-        }
-    }
     return user_challenges;
-    
 };
