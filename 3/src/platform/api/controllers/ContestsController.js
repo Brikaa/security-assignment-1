@@ -32,19 +32,13 @@ module.exports = {
                 submission_map[submission.contest_id] = [];
             }
 
-            submission_map[submission.contest_id].push(
-                submission.user.avatar_url
-            );
+            submission_map[submission.contest_id].push(submission.user.avatar_url);
         }
 
         for (const contest of past_contests) {
-            contest.solutions = submission_map[contest.contest_id]
-                ? submission_map[contest.contest_id].length
-                : 0;
+            contest.solutions = submission_map[contest.contest_id] ? submission_map[contest.contest_id].length : 0;
 
-            contest.participants = [
-                ...new Set(submission_map[contest.contest_id] || [])
-            ];
+            contest.participants = [...new Set(submission_map[contest.contest_id] || [])];
         }
 
         let active_contests = await db.contests.find_all({
@@ -70,10 +64,7 @@ module.exports = {
             ],
             order: [
                 ['end_date', 'desc'],
-                [
-                    { model: db.contest_submissions, as: 'submissions' },
-                    'created_at'
-                ]
+                [{ model: db.contest_submissions, as: 'submissions' }, 'created_at']
             ]
         });
 
@@ -115,14 +106,8 @@ module.exports = {
                 }
             ],
             order: [
-                [
-                    { model: db.contest_submissions, as: 'submissions' },
-                    'length'
-                ],
-                [
-                    { model: db.contest_submissions, as: 'submissions' },
-                    'created_at'
-                ]
+                [{ model: db.contest_submissions, as: 'submissions' }, 'length'],
+                [{ model: db.contest_submissions, as: 'submissions' }, 'created_at']
             ]
         });
 
@@ -138,11 +123,7 @@ module.exports = {
 
         contest.submissions.for_each((submission, i) => {
             // overall awards for top 3 solutions submitted by unique users
-            if (
-                !submission.late &&
-                !awarded_users.includes(submission.user_id) &&
-                top <= 3
-            ) {
+            if (!submission.late && !awarded_users.includes(submission.user_id) && top <= 3) {
                 switch (top) {
                     case 1:
                         submission.dataValues.overall_first = true;
@@ -161,10 +142,7 @@ module.exports = {
             }
 
             // per language awards for top solution in each language
-            if (
-                !submission.late &&
-                !awarded_languages.includes(submission.language)
-            ) {
+            if (!submission.late && !awarded_languages.includes(submission.language)) {
                 submission.dataValues.language_first = true;
                 awarded_languages.push(submission.language);
             }
@@ -191,91 +169,83 @@ module.exports = {
     },
 
     async submit(req, res) {
-        let { contest_id, language, solution, explanation, language_version } =
-            req.body;
+        try {
+            let { contest_id, language, solution, explanation, language_version } = req.body;
 
-        explanation = explanation || '';
-        solution = solution.trim();
+            explanation = explanation || '';
+            solution = solution.trim();
 
-        let contest = await db.contests.find_one({
-            where: {
-                contest_id
-            }
-        });
-
-        let test_cases = contests.get_cases(contest);
-        if (test_cases.length === 0) {
-            return res.status(400).send({
-                message:
-                    'No test cases exit for this contest, please contact an administrator'
+            let contest = await db.contests.find_one({
+                where: {
+                    contest_id
+                }
             });
-        }
-        let languages = await piston.runtimes();
 
-        languages = languages.filter((lang) => lang.language === language);
-
-        // To prevent submissions by alias
-        if (
-            constant.contests.disallowed_languages.includes(language) ||
-            !languages.length
-        ) {
-            return res.status(400).send({
-                message: 'An error has occurred while submitting your solution'
-            });
-        }
-
-        let is_valid = await contests.validate_submission(
-            test_cases,
-            solution,
-            language,
-            language_version
-        );
-
-        if (!is_valid) {
-            return res.status(200).send({
-                passed: false
-            });
-        }
-
-        if (moment().isBefore(contest.start_date)) {
-            // Don't save solution for upcoming contests
-            return res.status(200).send({
-                passed: true
-            });
-        }
-
-        let submission = await db.contest_submissions.find_one({
-            where: {
-                contest_id,
-                language,
-                user_id: req.local.user_id,
-                late: contest.active ? 0 : 1
-            }
-        });
-
-        let solution_bytes = new TextEncoder().encode(solution).length;
-
-        if (submission) {
-            submission.language = language;
-            submission.solution = solution;
-            submission.length = solution_bytes;
-            submission.explanation = explanation;
-            submission.language_version = language_version;
-
-            let prev_length = submission.previous('length');
-            let prev_length_best = submission.previous('length_best');
-
-            if (submission.length < prev_length_best) {
-                submission.length_best = solution_bytes;
-                submission.created_at = util.now();
+            if (!contest) {
+                return res.status(400).send({ message: 'Invalid contest' });
             }
 
-            if (submission.length < prev_length && contest.active) {
-                discord
-                    .api(
-                        'post',
-                        `/channels/${constant.channels.emkc}/messages`,
-                        {
+            let test_cases = contests.get_cases(contest);
+            if (test_cases.length === 0) {
+                return res.status(400).send({
+                    message: 'No test cases exit for this contest, please contact an administrator'
+                });
+            }
+            let languages = await piston.runtimes();
+
+            languages = languages.filter((lang) => lang.language === language);
+
+            // To prevent submissions by alias
+            if (constant.contests.disallowed_languages.includes(language) || !languages.length) {
+                return res.status(400).send({
+                    message: 'An error has occurred while submitting your solution'
+                });
+            }
+
+            let is_valid = await contests.validate_submission(test_cases, solution, language, language_version);
+
+            if (!is_valid) {
+                return res.status(200).send({
+                    passed: false
+                });
+            }
+
+            if (moment().isBefore(contest.start_date)) {
+                // Don't save solution for upcoming contests
+                return res.status(200).send({
+                    passed: true
+                });
+            }
+
+            let submission = await db.contest_submissions.find_one({
+                where: {
+                    contest_id,
+                    language,
+                    user_id: req.local.user_id,
+                    late: contest.active ? 0 : 1
+                }
+            });
+
+            let solution_bytes = new TextEncoder().encode(solution).length;
+
+            if (submission) {
+                submission.language = language;
+                submission.solution = solution;
+                submission.length = solution_bytes;
+                submission.explanation = explanation;
+                submission.language_version = language_version;
+
+                let prev_length = submission.previous('length');
+                let prev_length_best = submission.previous('length_best');
+
+                if (submission.length < prev_length_best) {
+                    submission.length_best = solution_bytes;
+                    submission.created_at = util.now();
+                }
+
+                if (submission.length < prev_length && contest.active) {
+                    discord
+                        .api('post', `/channels/${constant.channels.emkc}/messages`, {
                             embeds: [
                                 {
                                     title: contest.name,
@@ -290,43 +260,35 @@ module.exports = {
                                         name:
                                             `${req.local.user.display_name} updated their ${submission.language} ${submission.language_version} solution ` +
                                             `with one that is ${submission.length} bytes large ` +
-                                            `(a ${
-                                                prev_length - submission.length
-                                            } byte improvement)`
+                                            `(a ${prev_length - submission.length} byte improvement)`
                                     },
                                     footer: {
-                                        icon_url:
-                                            constant.cdn_url +
-                                            req.local.user.avatar_url,
+                                        icon_url: constant.cdn_url + req.local.user.avatar_url,
                                         text: `updated by ${req.local.user.display_name}`
                                     }
                                 }
                             ]
-                        }
-                    )
-                    .catch((err) => {});
-            }
+                        })
+                        .catch((err) => {});
+                }
 
-            await submission.save();
-        } else {
-            submission = await db.contest_submissions.create({
-                user_id: req.local.user_id,
-                contest_id,
-                language,
-                language_version,
-                solution,
-                length: solution_bytes,
-                length_best: solution_bytes,
-                explanation,
-                late: !contest.active
-            });
+                await submission.save();
+            } else {
+                submission = await db.contest_submissions.create({
+                    user_id: req.local.user_id,
+                    contest_id,
+                    language,
+                    language_version,
+                    solution,
+                    length: solution_bytes,
+                    length_best: solution_bytes,
+                    explanation,
+                    late: !contest.active
+                });
 
-            if (contest.active) {
-                discord
-                    .api(
-                        'post',
-                        `/channels/${constant.channels.emkc}/messages`,
-                        {
+                if (contest.active) {
+                    discord
+                        .api('post', `/channels/${constant.channels.emkc}/messages`, {
                             embeds: [
                                 {
                                     title: contest.name,
@@ -343,22 +305,23 @@ module.exports = {
                                             `byte solution with ${submission.language} ${submission.language_version}`
                                     },
                                     footer: {
-                                        icon_url:
-                                            constant.cdn_url +
-                                            req.local.user.avatar_url,
+                                        icon_url: constant.cdn_url + req.local.user.avatar_url,
                                         text: `submitted by ${req.local.user.display_name}`
                                     }
                                 }
                             ]
-                        }
-                    )
-                    .catch((err) => {});
+                        })
+                        .catch((err) => {});
+                }
             }
-        }
 
-        return res.status(200).send({
-            passed: true
-        });
+            return res.status(200).send({
+                passed: true
+            });
+        } catch (e) {
+            console.error(e);
+            return res.status(500).send();
+        }
     },
 
     async disallowed_languages(req, res) {
@@ -370,9 +333,7 @@ module.exports = {
             }
         });
 
-        let disallowed_languages = contest.disallowed_languages
-            ? contest.disallowed_languages.split(',')
-            : [];
+        let disallowed_languages = contest.disallowed_languages ? contest.disallowed_languages.split(',') : [];
 
         return res.status(200).send(disallowed_languages);
     }

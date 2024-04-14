@@ -13,10 +13,7 @@ module.exports = {
                 throw null;
             }
 
-            if (
-                req.headers.accept === 'text/plain' ||
-                req.path.match(/\/raw$/)
-            ) {
+            if (req.headers.accept === 'text/plain' || req.path.match(/\/raw$/)) {
                 res.set('content-type', 'text/plain');
 
                 return res.status(200).send(snippet.snip);
@@ -67,8 +64,9 @@ module.exports = {
                     url: snippet.url
                 });
             } catch (e) {
-                return res.status(400).send({
-                    message: e.message
+                console.error(e);
+                return res.status(500).send({
+                    message: 'An error has occurred'
                 });
             }
         }
