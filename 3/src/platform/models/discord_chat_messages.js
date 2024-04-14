@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             channel: DataTypes.STRING,
             user: DataTypes.STRING,
             discord_id: DataTypes.STRING,
-            message: DataTypes.STRING,
+            message: encryption.create_encrypted_field('message', DataTypes.STRING),
             created_at: DataTypes.DATE
         },
         {
@@ -22,17 +22,8 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'discord_chat_messages',
             freezeTableName: true,
             hooks: {
-                async beforeCreate(instance) {
+                beforeCreate(instance) {
                     instance.created_at = util.now();
-                    instance.message = await encryption.encrypt(instance.message);
-                },
-                async beforeUpdate(instance) {
-                    if (instance.changed('message')) instance.message = await encryption.encrypt(instance.message);
-                },
-                afterFind(instances) {
-                    return util.update_instances(instances, async (instance) => {
-                        instance.message = await encryption.decrypt(instance.message);
-                    });
                 }
             }
         }

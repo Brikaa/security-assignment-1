@@ -1,36 +1,37 @@
-const { scrypt, randomFill, createCipheriv, createDecipheriv } = require('crypto');
+const { createCipheriv, createDecipheriv, scryptSync, randomFillSync } = require('crypto');
 
 const algorithm = 'aes-192-cbc';
 const password = sails.config.encryption.password;
 const salt = 'salt';
 
-module.exports.encrypt = (plaintext) => {
-    return new Promise((resolve, reject) => {
-        scrypt(password, salt, 24, (err, key) => {
-            if (err) reject(err);
-            randomFill(new Uint8Array(16), (err, iv) => {
-                if (err) reject(err);
+const encrypt = (plaintext) => {
+    const key = scryptSync(password, salt, 24);
+    const iv = randomFillSync(new Uint8Array(16));
 
-                const cipher = createCipheriv(algorithm, key, iv);
+    const cipher = createCipheriv(algorithm, key, iv);
 
-                let encrypted = cipher.update(plaintext, 'utf8', 'hex');
-                encrypted += cipher.final('hex');
-                resolve(iv.toString() + '.' + encrypted);
-            });
-        });
-    });
+    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString() + '.' + encrypted;
 };
 
-module.exports.decrypt = (value) => {
-    return new Promise((resolve, reject) => {
-        scrypt(password, salt, 24, (err, key) => {
-            if (err) reject(err);
-            const [iv_str, encrypted] = value.split('.');
-            const iv = Uint8Array.from(iv_str.split(','));
-            const decipher = createDecipheriv(algorithm, key, iv);
-            let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-            decrypted += decipher.final('utf8');
-            resolve(decrypted);
-        });
-    });
+const decrypt = (value) => {
+    const key = scryptSync(password, salt, 24);
+    const [iv_str, encrypted] = value.split('.');
+    const iv = Uint8Array.from(iv_str.split(','));
+    const decipher = createDecipheriv(algorithm, key, iv);
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
 };
+
+module.exports.create_encrypted_field = (name, datatype) => ({
+    type: datatype,
+    get() {
+        const value = this.getDataValue(name);
+        if (value) return decrypt(value);
+    },
+    set(value) {
+        this.setDataValue(name, encrypt(value));
+    }
+});

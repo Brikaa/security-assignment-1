@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
             user_id: DataTypes.INTEGER,
             challenge_id: DataTypes.INTEGER,
             language: DataTypes.STRING,
-            solution: DataTypes.TEXT('medium'),
+            solution: encryption.create_encrypted_field('solution', DataTypes.TEXT('medium')),
             created_at: DataTypes.DATE
         },
         {
@@ -21,18 +21,8 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'user_challenges',
             freezeTableName: true,
             hooks: {
-                async beforeCreate(instance) {
+                beforeCreate(instance) {
                     instance.created_at = util.now();
-                    instance.solution = await encryption.encrypt(instance.solution);
-                },
-                async beforeUpdate(instance) {
-                    if (instance.changed('solution')) instance.solution = await encryption.encrypt(instance.solution);
-                },
-                afterFind(instances) {
-                    console.log({instances});
-                    return util.update_instances(instances, async (instance) => {
-                        instance.solution = await encryption.decrypt(instance.solution);
-                    });
                 }
             }
         }

@@ -2,7 +2,7 @@ const moment = require('moment');
 
 module.exports = {
     async messages(req, res) {
-        let { user, discord_id, term, start, end, limit } = req.query;
+        let { user, discord_id, start, end, limit } = req.query;
 
         if (!Array.is_array(user) && typeof user !== 'undefined') {
             user = [user];
@@ -26,20 +26,12 @@ module.exports = {
             limit: 1000
         };
 
-        let dates = [];
-
         if (user) {
             query.where.user = user;
         }
 
         if (discord_id) {
             query.where.discord_id = discord_id;
-        }
-
-        if (term) {
-            query.where.message = {
-                [$like]: '%' + term + '%'
-            };
         }
 
         if (start) {
@@ -90,8 +82,6 @@ module.exports = {
             group: ['channel'],
             limit: 1000
         };
-
-        let dates = [];
 
         if (user) {
             query.where.user = {

@@ -93,15 +93,5 @@ module.exports = {
                 fs.unlink(file.fd);
             });
         });
-    },
-
-    update_instances(instances, callback) {
-        if (instances) {
-            if (Array.isArray(instances)) {
-                return Promise.all(instances.map((instance) => callback(instance)));
-            } else {
-                return callback(instances);
-            }
-        }
     }
 };

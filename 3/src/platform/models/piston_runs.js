@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
             user: DataTypes.STRING,
             user_id: DataTypes.STRING,
             language: DataTypes.STRING,
-            source: DataTypes.TEXT,
+            source: encryption.create_encrypted_field('source', DataTypes.TEXT),
             created_at: DataTypes.DATE
         },
         {
@@ -23,17 +23,8 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'piston_runs',
             freezeTableName: true,
             hooks: {
-                async beforeCreate(instance) {
+                beforeCreate(instance) {
                     instance.created_at = util.now();
-                    instance.source = await encryption.encrypt(instance.source);
-                },
-                async beforeUpdate(instance) {
-                    if (instance.changed('source')) instance.source = await encryption.encrypt(instance.source);
-                },
-                afterFind(instances) {
-                    return util.update_instances(instances, async (instance) => {
-                        instance.source = await encryption.decrypt(instance.source);
-                    });
                 }
             }
         }
