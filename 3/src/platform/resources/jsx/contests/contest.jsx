@@ -556,7 +556,7 @@ class Contest extends React.Component {
                             );
                         })}
                     </select>
-                    {!!ctx.is_superuser && (
+                    {!!ctx.is_contest_author && (
                         <div class="float-right">
                             <button
                                 type="button"
@@ -629,7 +629,7 @@ class Contest extends React.Component {
                                             'MMMM D, YYYY @ h:mm:ss a'
                                         )}{' '}
                                         (#{submission.contest_submission_id}){' '}
-                                        {!!ctx.is_superuser && (
+                                        {!!ctx.is_contest_author && (
                                             <a
                                                 onClick={() =>
                                                     this.delete(
